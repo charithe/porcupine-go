@@ -65,7 +65,6 @@ func listen(p *porcupine.SingleKeywordHandle, input io.Reader, shutdownChan <-ch
 				return
 			}
 
-			log.Printf("processing frame")
 			found, err := p.Process(audioFrame)
 			if err != nil {
 				log.Printf("error: %+v", err)
@@ -74,6 +73,7 @@ func listen(p *porcupine.SingleKeywordHandle, input io.Reader, shutdownChan <-ch
 
 			if found {
 				log.Printf("keyword detected")
+				return
 			}
 		}
 	}

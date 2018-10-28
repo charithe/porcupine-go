@@ -69,6 +69,7 @@ func (s *SingleKeywordHandle) Process(data []int16) (bool, error) {
 	cData := C.malloc(C.size_t(len(data)) * C.size_t(unsafe.Sizeof(int16(0))))
 	defer C.free(cData)
 
+	// TODO is this efficient?
 	tmp := (*[1<<30 - 1]int16)(cData)
 	for i, v := range data {
 		tmp[i] = v
