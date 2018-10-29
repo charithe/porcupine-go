@@ -106,16 +106,8 @@ func NewSingleKeywordHandle(modelFilePath string, keyword *Keyword) (*SingleKeyw
 
 // Process checks the provided audio frame and returns the word if it was detected
 func (s *SingleKeywordHandle) Process(data []int16) (string, error) {
-	cData := C.malloc(C.size_t(len(data)) * C.size_t(unsafe.Sizeof(int16(0))))
-	defer C.free(cData)
-
-	tmp := (*[1<<30 - 1]int16)(cData)
-	for i, v := range data {
-		tmp[i] = v
-	}
-
 	var result C.bool
-	status := C.pv_porcupine_process(s.handle.h, (*C.int16_t)(unsafe.Pointer(cData)), &result)
+	status := C.pv_porcupine_process(s.handle.h, (*C.int16_t)(unsafe.Pointer(&data[0])), &result)
 	if err := checkStatus(status); err != nil || bool(result) == false {
 		return "", err
 	}
@@ -168,16 +160,8 @@ func NewMultipleKeywordHandle(modelFilePath string, keywords ...*Keyword) (*Mult
 // Process checks the provided audio frame and returns the index of the detected keyword
 // If no keyword is detected, returns -1
 func (s *MultipleKeywordHandle) Process(data []int16) (string, error) {
-	cData := C.malloc(C.size_t(len(data)) * C.size_t(unsafe.Sizeof(int16(0))))
-	defer C.free(cData)
-
-	tmp := (*[1<<30 - 1]int16)(cData)
-	for i, v := range data {
-		tmp[i] = v
-	}
-
 	var kwIndex C.int
-	status := C.pv_porcupine_multiple_keywords_process(s.handle.h, (*C.int16_t)(unsafe.Pointer(cData)), &kwIndex)
+	status := C.pv_porcupine_multiple_keywords_process(s.handle.h, (*C.int16_t)(unsafe.Pointer(&data[0])), &kwIndex)
 	idx := int(kwIndex)
 	if err := checkStatus(status); err != nil || idx < 0 || idx >= len(s.kw) {
 		return "", err
