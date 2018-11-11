@@ -6,9 +6,12 @@ package porcupine
 import "C"
 import (
 	"errors"
+	"fmt"
 	"sync"
 	"unsafe"
 )
+
+const maxKeywords = 128
 
 var (
 	// ErrOutOfMemory is returned when the call to porcupine results in PV_STATUS_OUT_OF_MEMORY
@@ -126,9 +129,13 @@ func NewMultipleKeywordHandle(modelFilePath string, keywords ...*Keyword) (*Mult
 	mf := C.CString(modelFilePath)
 	numKeywords := C.int(len(keywords))
 
+	if numKeywords > maxKeywords {
+		return nil, fmt.Errorf("maximum number of keywords supported by the Go wrappper is %d", maxKeywords)
+	}
+
 	// create C arrays for keywords files and sensitivities
 	cKeywords := C.malloc(C.size_t(len(keywords)) * C.size_t(unsafe.Sizeof(uintptr(0))))
-	tmpGoKeywords := (*[1<<30 - 1]*C.char)(cKeywords)
+	tmpGoKeywords := (*[maxKeywords]*C.char)(cKeywords)
 
 	tmpGoSensitivities := make([]float32, len(keywords))
 
